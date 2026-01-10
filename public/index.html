@@ -62,6 +62,96 @@
   td:last-child{text-align:right;color:var(--hud-green)}
   #countdown{font-size:56px;color:#fff;margin-top:8px;letter-spacing:8px}
   #pauseHint{position:absolute;top:10px;left:50%;transform:translateX(-50%);font-size:10px;color:#888}
+  
+
+
+
+  /*Mobile css */
+  /* ---------------- MOBILE LAYOUT ---------------- */
+@media (max-width: 768px) {
+
+  body {
+    overflow: hidden;
+  }
+
+  #main-interface {
+    flex-direction: column;
+    width: 100vw;
+    height: 100vh;
+  }
+
+  /* Game on top */
+  #sim-view {
+    flex: none;
+    height: 55vh;
+    border-right: none;
+    border-bottom: 2px solid #333;
+  }
+
+  /* Questions below */
+  #sys-view {
+    flex: none;
+    height: 45vh;
+    padding: 12px;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+  }
+
+  .stat-val {
+    font-size: 14px;
+  }
+
+  #q-display {
+    font-size: 18px;
+    margin-bottom: 14px;
+  }
+
+  .ans-btn {
+    padding: 12px;
+    font-size: 16px;
+  }
+}
+
+/* ================= FLIGHT CONTROL BUTTONS ================= */
+#flight-controls{
+  position:absolute;
+  left:12px;
+  top:50%;
+  transform:translateY(-50%);
+  display:none;
+  flex-direction:column;
+  gap:14px;
+  z-index:30;
+}
+
+#flight-controls button{
+  width:64px;
+  height:64px;
+  background:#111;
+  border:2px solid var(--hud-green);
+  color:var(--hud-green);
+  font-size:26px;
+  font-weight:bold;
+  border-radius:14px;
+  cursor:pointer;
+  touch-action:manipulation;
+}
+
+#flight-controls button:active{
+  background:var(--hud-green);
+  color:#000;
+}
+
+/* SHOW ONLY ON MOBILE */
+@media (max-width:768px){
+  #flight-controls{
+    display:flex;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -95,6 +185,13 @@
   <div id="sim-view">
     <div id="pauseHint">Press <b>P</b> to Pause/Resume</div>
     <canvas id="simCanvas"></canvas>
+    <!-- MOBILE TOUCH CONTROLS -->
+<!-- MOBILE FLIGHT BUTTONS -->
+<div id="flight-controls">
+  <button id="btn-up">▲</button>
+  <button id="btn-down">▼</button>
+</div>
+
     <div id="hud-overlay">
       <div class="crosshair"></div>
       <div class="hud-line" style="top:20%;left:10px;width:20px;height:1px"></div>
@@ -285,11 +382,39 @@ class Simulator{
     this.keys = {u:0,d:0};
     window.onkeydown = (e)=> this.handleKey(e,1);
     window.onkeyup   = (e)=> this.handleKey(e,0);
+ // MOBILE TOUCH
+// ================= FLIGHT BUTTON CONTROLS =================
+const btnUp = document.getElementById('btn-up');
+const btnDown = document.getElementById('btn-down');
+
+if (btnUp && btnDown) {
+  btnUp.addEventListener('touchstart', e => {
+    e.preventDefault();
+    this.keys.u = 1;
+  });
+
+  btnUp.addEventListener('touchend', e => {
+    e.preventDefault();
+    this.keys.u = 0;
+  });
+
+  btnDown.addEventListener('touchstart', e => {
+    e.preventDefault();
+    this.keys.d = 1;
+  });
+
+  btnDown.addEventListener('touchend', e => {
+    e.preventDefault();
+    this.keys.d = 0;
+  });
+}
 
     for(let i=0;i<50;i++){
       this.stars.push({x: Math.random()*this.w, y: Math.random()*this.h, s: Math.random()*2+0.5});
     }
   }
+
+  
 
   handleKey(e,state){
     const k = e.key.toLowerCase();
