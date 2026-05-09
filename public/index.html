@@ -1,90 +1,1345 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#07090F" />
 
-    <!-- Primary SEO -->
-    <title>Sharpen — Mental Math Trainer | Speed, Accuracy & Streaks</title>
-    <meta name="description" content="Train your brain with Sharpen — the premium mental math app. Master multiplication shortcuts, percentages, and approximations with adaptive difficulty, streak rewards, and real-time feedback." />
-    <meta name="keywords" content="mental math, math trainer, speed math, math practice, multiplication shortcuts, percentage calculator, brain training, math streaks, math accuracy, cognitive training" />
-    <meta name="author" content="Sharpen" />
-    <meta name="robots" content="index, follow" />
-    <link rel="canonical" href="https://sharpen.app/" />
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --h1-orange: #FF5500;
+    --h1-dark: #0A0A0A;
+    --h1-card: #161616;
+    --h1-card2: #1E1E1E;
+    --h1-text: #FFFFFF;
+    --h1-muted: #888888;
+    --h1-border: rgba(255,255,255,0.08);
+    --h1-orange-soft: rgba(255,85,0,0.12);
+  }
+  body { background: transparent; }
+  .scene {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem 1rem;
+    min-height: 820px;
+    background: linear-gradient(135deg, #0a0a0a 0%, #1a0a00 50%, #0a0a0a 100%);
+    border-radius: 20px;
+  }
+  .phone {
+    width: 375px;
+    height: 780px;
+    background: #000;
+    border-radius: 52px;
+    border: 2px solid #333;
+    box-shadow: 0 0 0 1px #111, 0 40px 80px rgba(0,0,0,0.8), inset 0 0 0 1px #222;
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .notch {
+    position: absolute;
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 126px; height: 36px;
+    background: #000;
+    border-radius: 0 0 20px 20px;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .camera { width: 12px; height: 12px; border-radius: 50%; background: #1a1a1a; border: 1px solid #333; }
+  .screen {
+    position: absolute;
+    inset: 0;
+    background: var(--h1-dark);
+    border-radius: 52px;
+    overflow: hidden;
+    display: none;
+  }
+  .screen.active { display: flex; flex-direction: column; }
+  .status-bar {
+    height: 44px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding: 0 28px 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+    flex-shrink: 0;
+  }
+  .status-right { display: flex; gap: 6px; align-items: center; }
+  .scroll-content {
+    flex: 1;
+    overflow-y: auto;
+    padding-bottom: 80px;
+  }
+  .scroll-content::-webkit-scrollbar { display: none; }
+  .tab-bar {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 80px;
+    background: rgba(10,10,10,0.95);
+    backdrop-filter: blur(20px);
+    border-top: 0.5px solid var(--h1-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 0 10px 16px;
+    border-radius: 0 0 52px 52px;
+  }
+  .tab-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 12px;
+    transition: background 0.2s;
+    min-width: 56px;
+  }
+  .tab-item:active { background: rgba(255,85,0,0.1); }
+  .tab-icon { font-size: 22px; color: var(--h1-muted); }
+  .tab-icon.active { color: var(--h1-orange); }
+  .tab-label { font-size: 10px; color: var(--h1-muted); font-weight: 500; }
+  .tab-label.active { color: var(--h1-orange); }
 
-    <!-- Open Graph (Facebook, WhatsApp, LinkedIn) -->
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://sharpen.app/" />
-    <meta property="og:title" content="Sharpen — Mental Math Trainer" />
-    <meta property="og:description" content="Adaptive mental math training with streak rewards, speed modes, and real-time feedback. Stay sharp." />
-    <meta property="og:image" content="https://sharpen.app/og-image.png" />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
-    <meta property="og:site_name" content="Sharpen" />
-    <meta property="og:locale" content="en_US" />
+  /* SPLASH */
+  #splash {
+    background: #000;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 24px;
+  }
+  .logo-box {
+    width: 90px; height: 90px;
+    background: #111;
+    border-radius: 22px;
+    border: 1px solid #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    font-weight: 900;
+    color: var(--h1-orange);
+    letter-spacing: -4px;
+  }
+  .splash-title { font-size: 28px; font-weight: 800; color: #fff; letter-spacing: -1px; }
+  .splash-sub { font-size: 14px; color: var(--h1-muted); text-align: center; padding: 0 40px; }
+  .btn-primary {
+    background: var(--h1-orange);
+    color: #fff;
+    border: none;
+    border-radius: 16px;
+    padding: 16px 32px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    width: 280px;
+    letter-spacing: 0.2px;
+    transition: opacity 0.2s, transform 0.1s;
+  }
+  .btn-primary:active { opacity: 0.85; transform: scale(0.98); }
+  .btn-ghost {
+    background: transparent;
+    color: var(--h1-muted);
+    border: 0.5px solid #333;
+    border-radius: 16px;
+    padding: 14px 32px;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    width: 280px;
+    transition: opacity 0.2s;
+  }
 
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:url" content="https://sharpen.app/" />
-    <meta name="twitter:title" content="Sharpen — Mental Math Trainer" />
-    <meta name="twitter:description" content="Adaptive mental math training with streak rewards, speed modes, and real-time feedback. Stay sharp." />
-    <meta name="twitter:image" content="https://sharpen.app/og-image.png" />
+  /* HOME */
+  .home-header {
+    padding: 16px 20px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .greeting { font-size: 13px; color: var(--h1-muted); }
+  .user-name { font-size: 20px; font-weight: 700; color: #fff; margin-top: 2px; }
+  .avatar {
+    width: 40px; height: 40px;
+    background: var(--h1-orange);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+  }
+  .h1-card-main {
+    margin: 0 20px;
+    background: linear-gradient(135deg, #1a0800 0%, #2d0f00 100%);
+    border: 1px solid rgba(255,85,0,0.3);
+    border-radius: 20px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .h1-card-main::before {
+    content: 'H1';
+    position: absolute;
+    right: -10px; top: -10px;
+    font-size: 100px;
+    font-weight: 900;
+    color: rgba(255,85,0,0.07);
+    line-height: 1;
+  }
+  .card-id { font-size: 11px; color: rgba(255,85,0,0.7); font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
+  .card-num { font-size: 22px; font-weight: 800; color: #fff; margin: 4px 0; }
+  .progress-label { font-size: 12px; color: var(--h1-muted); margin-top: 12px; }
+  .progress-bar {
+    background: rgba(255,255,255,0.1);
+    border-radius: 6px;
+    height: 6px;
+    margin-top: 6px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--h1-orange);
+    border-radius: 6px;
+    width: 73%;
+  }
+  .card-stats {
+    display: flex;
+    gap: 16px;
+    margin-top: 16px;
+  }
+  .stat-item { flex: 1; }
+  .stat-val { font-size: 18px; font-weight: 700; color: #fff; }
+  .stat-lbl { font-size: 11px; color: var(--h1-muted); }
 
-    <!-- PWA / Mobile -->
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Sharpen" />
-    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
-    <link rel="manifest" href="/manifest.json" />
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 20px 10px;
+  }
+  .section-title { font-size: 17px; font-weight: 700; color: #fff; }
+  .see-all { font-size: 13px; color: var(--h1-orange); font-weight: 500; cursor: pointer; }
 
-    <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png" />
-    <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png" />
+  .services-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    padding: 0 20px;
+  }
+  .service-tile {
+    background: var(--h1-card);
+    border: 0.5px solid var(--h1-border);
+    border-radius: 16px;
+    padding: 14px 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .service-tile:active { background: var(--h1-card2); transform: scale(0.97); }
+  .service-icon { font-size: 24px; color: var(--h1-orange); }
+  .service-name { font-size: 11px; font-weight: 600; color: #fff; text-align: center; }
 
-    <!-- Structured Data (JSON-LD) -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebApplication",
-      "name": "Sharpen",
-      "url": "https://sharpen.app/",
-      "description": "Premium mental math training app with adaptive difficulty, streak rewards, and real-time feedback.",
-      "applicationCategory": "EducationApplication",
-      "operatingSystem": "Web",
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "USD"
-      },
-      "featureList": [
-        "Adaptive difficulty scaling",
-        "Streak reward system",
-        "Speed and accuracy modes",
-        "Multiplication shortcuts",
-        "Percentage calculations",
-        "Approximation problems"
-      ]
-    }
-    </script>
+  .upcoming-card {
+    margin: 0 20px;
+    background: var(--h1-card);
+    border: 0.5px solid var(--h1-border);
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    cursor: pointer;
+  }
+  .upcoming-icon {
+    width: 44px; height: 44px;
+    background: var(--h1-orange-soft);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: var(--h1-orange);
+    flex-shrink: 0;
+  }
+  .upcoming-info { flex: 1; }
+  .upcoming-title { font-size: 15px; font-weight: 600; color: #fff; }
+  .upcoming-sub { font-size: 12px; color: var(--h1-muted); margin-top: 2px; }
+  .status-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 8px;
+    background: rgba(255,85,0,0.15);
+    color: var(--h1-orange);
+  }
 
+  /* 3D STUDIO */
+  .studio-header {
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .back-btn {
+    width: 36px; height: 36px;
+    background: var(--h1-card);
+    border-radius: 10px;
+    border: 0.5px solid var(--h1-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 18px;
+    color: #fff;
+  }
+  .studio-title { font-size: 18px; font-weight: 700; color: #fff; }
+  .studio-sub { font-size: 12px; color: var(--h1-muted); }
 
-    <style>
-      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-      html, body, #root {
-        height: 100%;
-        background: #07090F;
-        color: #E8EAF4;
-        font-family: 'DM Sans', sans-serif;
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-        overflow-x: hidden;
-      }
-    </style>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script src="bundle.js"></script>
-  </body>
-</html>
+  .car-stage {
+    margin: 0 20px;
+    background: var(--h1-card);
+    border: 0.5px solid var(--h1-border);
+    border-radius: 20px;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+  }
+  .car-svg-wrap { position: relative; z-index: 2; }
+  .car-glow {
+    position: absolute;
+    width: 200px; height: 100px;
+    background: radial-gradient(ellipse, rgba(255,85,0,0.2) 0%, transparent 70%);
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  .car-color-label {
+    position: absolute;
+    bottom: 12px;
+    right: 16px;
+    font-size: 11px;
+    color: var(--h1-orange);
+    font-weight: 600;
+    background: rgba(255,85,0,0.1);
+    padding: 4px 10px;
+    border-radius: 8px;
+  }
+  .color-picker-row {
+    display: flex;
+    gap: 10px;
+    padding: 14px 20px;
+    align-items: center;
+  }
+  .color-label-sm { font-size: 13px; color: var(--h1-muted); font-weight: 500; flex-shrink: 0; }
+  .color-swatch {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: transform 0.2s;
+    flex-shrink: 0;
+  }
+  .color-swatch.selected { border-color: #fff; transform: scale(1.15); }
+  .color-swatch:active { transform: scale(0.9); }
+
+  .options-row {
+    display: flex;
+    gap: 8px;
+    padding: 0 20px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .options-row::-webkit-scrollbar { display: none; }
+  .opt-chip {
+    background: var(--h1-card);
+    border: 0.5px solid var(--h1-border);
+    border-radius: 12px;
+    padding: 8px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--h1-muted);
+    white-space: nowrap;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .opt-chip.active {
+    background: var(--h1-orange-soft);
+    border-color: rgba(255,85,0,0.4);
+    color: var(--h1-orange);
+  }
+  .opt-chip:active { transform: scale(0.96); }
+
+  .book-strip {
+    margin: 14px 20px 0;
+    background: var(--h1-orange);
+    border-radius: 16px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .book-strip:active { opacity: 0.85; }
+  .book-txt { font-size: 15px; font-weight: 700; color: #fff; }
+  .book-sub { font-size: 12px; color: rgba(255,255,255,0.7); }
+  .book-arr { font-size: 22px; color: #fff; }
+
+  /* BOOKING */
+  .booking-header {
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .booking-title { font-size: 18px; font-weight: 700; color: #fff; }
+
+  .slot-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    padding: 0 20px;
+  }
+  .slot-item {
+    background: var(--h1-card);
+    border: 0.5px solid var(--h1-border);
+    border-radius: 12px;
+    padding: 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .slot-item.selected {
+    background: var(--h1-orange-soft);
+    border-color: rgba(255,85,0,0.4);
+  }
+  .slot-item:active { transform: scale(0.96); }
+  .slot-day { font-size: 11px; color: var(--h1-muted); }
+  .slot-date { font-size: 20px; font-weight: 700; color: #fff; }
+  .slot-avail { font-size: 10px; color: var(--h1-orange); margin-top: 2px; }
+
+  .time-slot-row {
+    display: flex;
+    gap: 8px;
+    padding: 12px 20px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .time-slot-row::-webkit-scrollbar { display: none; }
+  .time-chip {
+    background: var(--h1-card);
+    border: 0.5px solid var(--h1-border);
+    border-radius: 10px;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--h1-muted);
+    white-space: nowrap;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.2s;
+  }
+  .time-chip.selected {
+    background: var(--h1-orange-soft);
+    border-color: rgba(255,85,0,0.4);
+    color: var(--h1-orange);
+  }
+  .summary-card {
+    margin: 0 20px;
+    background: var(--h1-card);
+    border: 0.5px solid var(--h1-border);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+  .summary-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 0.5px solid var(--h1-border);
+    font-size: 14px;
+  }
+  .summary-key { color: var(--h1-muted); }
+  .summary-val { color: #fff; font-weight: 600; }
+
+  /* LOYALTY */
+  .loyalty-hero {
+    margin: 0 20px;
+    background: linear-gradient(135deg, #1a0800, #2d1000);
+    border: 1px solid rgba(255,85,0,0.25);
+    border-radius: 20px;
+    padding: 24px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .tier-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #DAA520, #FFD700);
+    color: #000;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 4px 14px;
+    border-radius: 20px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .points-big { font-size: 52px; font-weight: 900; color: #fff; line-height: 1; margin: 12px 0 4px; }
+  .points-lbl { font-size: 13px; color: var(--h1-muted); }
+  .progress-to-plat { margin-top: 16px; }
+  .prog-label-row { display: flex; justify-content: space-between; font-size: 11px; color: var(--h1-muted); margin-bottom: 6px; }
+  .prog-bar { background: rgba(255,255,255,0.1); border-radius: 6px; height: 6px; overflow: hidden; }
+  .prog-fill { height: 100%; background: linear-gradient(90deg, var(--h1-orange), #FFD700); border-radius: 6px; }
+
+  .tier-row {
+    display: flex;
+    gap: 8px;
+    padding: 0 20px;
+  }
+  .tier-card {
+    flex: 1;
+    background: var(--h1-card);
+    border: 0.5px solid var(--h1-border);
+    border-radius: 14px;
+    padding: 14px 10px;
+    text-align: center;
+  }
+  .tier-card.active { border-color: #DAA520; background: rgba(218,165,32,0.08); }
+  .tier-name { font-size: 12px; font-weight: 700; color: var(--h1-muted); }
+  .tier-name.gold { color: #DAA520; }
+  .tier-pts { font-size: 11px; color: var(--h1-muted); margin-top: 2px; }
+
+  .perk-list { padding: 0 20px; display: flex; flex-direction: column; gap: 8px; }
+  .perk-item {
+    background: var(--h1-card);
+    border: 0.5px solid var(--h1-border);
+    border-radius: 14px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .perk-icon {
+    width: 40px; height: 40px;
+    background: var(--h1-orange-soft);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    color: var(--h1-orange);
+    flex-shrink: 0;
+  }
+  .perk-title { font-size: 14px; font-weight: 600; color: #fff; }
+  .perk-desc { font-size: 12px; color: var(--h1-muted); margin-top: 2px; }
+  .perk-pts { font-size: 13px; font-weight: 700; color: var(--h1-orange); margin-left: auto; }
+
+  /* OWNER */
+  .owner-header { padding: 16px 20px 8px; }
+  .owner-title { font-size: 20px; font-weight: 800; color: #fff; }
+  .owner-sub { font-size: 13px; color: var(--h1-muted); }
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 12px 20px;
+  }
+  .kpi-card {
+    background: var(--h1-card);
+    border: 0.5px solid var(--h1-border);
+    border-radius: 16px;
+    padding: 16px;
+  }
+  .kpi-icon { font-size: 20px; color: var(--h1-orange); margin-bottom: 8px; }
+  .kpi-val { font-size: 24px; font-weight: 800; color: #fff; }
+  .kpi-lbl { font-size: 11px; color: var(--h1-muted); margin-top: 2px; }
+  .kpi-trend { font-size: 11px; color: #22c55e; font-weight: 600; }
+  .chart-card {
+    margin: 0 20px;
+    background: var(--h1-card);
+    border: 0.5px solid var(--h1-border);
+    border-radius: 16px;
+    padding: 16px;
+  }
+  .chart-label { font-size: 14px; font-weight: 600; color: #fff; margin-bottom: 14px; }
+  .bar-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    height: 80px;
+  }
+  .bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .bar {
+    width: 100%;
+    border-radius: 6px 6px 0 0;
+    background: rgba(255,85,0,0.3);
+    transition: height 0.3s;
+  }
+  .bar.highlight { background: var(--h1-orange); }
+  .bar-lbl { font-size: 9px; color: var(--h1-muted); }
+
+  .job-list { padding: 0 20px; display: flex; flex-direction: column; gap: 8px; }
+  .job-item {
+    background: var(--h1-card);
+    border: 0.5px solid var(--h1-border);
+    border-radius: 14px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .job-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .job-dot.active { background: var(--h1-orange); }
+  .job-dot.done { background: #22c55e; }
+  .job-dot.pending { background: #888; }
+  .job-info { flex: 1; }
+  .job-name { font-size: 14px; font-weight: 600; color: #fff; }
+  .job-car { font-size: 12px; color: var(--h1-muted); }
+  .job-pct { font-size: 13px; font-weight: 700; color: var(--h1-orange); }
+</style>
+
+<div class="scene">
+  <div class="phone">
+    <div class="notch">
+      <div class="camera"></div>
+      <div style="width: 60px; height: 6px; background: #1a1a1a; border-radius: 4px;"></div>
+      <div class="camera"></div>
+    </div>
+
+    <!-- SPLASH SCREEN -->
+    <div class="screen active" id="splash">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:20px;padding-top:40px;">
+        <div class="logo-box">H<span style="color:#fff;font-size:36px;">1</span></div>
+        <div style="text-align:center;">
+          <div class="splash-title">H1 Detailing</div>
+          <div style="font-size:14px;font-weight:800;color:var(--h1-orange);letter-spacing:2px;text-transform:uppercase;margin-top:2px;">Factory</div>
+        </div>
+        <div class="splash-sub">Bengaluru's premier car transformation hub. Your car. Reimagined.</div>
+        <div style="margin-top:16px;display:flex;flex-direction:column;gap:12px;align-items:center;">
+          <button class="btn-primary" onclick="showScreen('home')">Get Started</button>
+          <button class="btn-ghost" onclick="showScreen('home')">I already have an account</button>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:8px;">
+          <div style="width:8px;height:8px;border-radius:50%;background:var(--h1-orange);"></div>
+          <div style="width:8px;height:8px;border-radius:50%;background:#333;"></div>
+          <div style="width:8px;height:8px;border-radius:50%;background:#333;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HOME SCREEN -->
+    <div class="screen" id="home">
+      <div class="status-bar">
+        <span>9:41</span>
+        <div class="status-right">
+          <i class="ti ti-wifi" style="font-size:14px;"></i>
+          <i class="ti ti-battery-2" style="font-size:14px;"></i>
+        </div>
+      </div>
+      <div class="scroll-content">
+        <div class="home-header">
+          <div>
+            <div class="greeting">Good morning 👋</div>
+            <div class="user-name">Priya Sharma</div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;">
+            <div style="width:36px;height:36px;background:var(--h1-card);border:0.5px solid var(--h1-border);border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;" onclick="showScreen('owner')">
+              <i class="ti ti-chart-bar" style="font-size:18px;color:var(--h1-orange);"></i>
+            </div>
+            <div class="avatar">PS</div>
+          </div>
+        </div>
+
+        <div class="h1-card-main">
+          <div class="card-id">H1 Member ID</div>
+          <div class="card-num">#H1-00421</div>
+          <div class="progress-label">Ceramic Coat Progress</div>
+          <div class="progress-bar"><div class="progress-fill"></div></div>
+          <div class="card-stats">
+            <div class="stat-item">
+              <div class="stat-val" style="color:var(--h1-orange);">1,240</div>
+              <div class="stat-lbl">H1 Points</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-val">GOLD</div>
+              <div class="stat-lbl">Tier</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-val">2</div>
+              <div class="stat-lbl">Vehicles</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-header">
+          <div class="section-title">Services</div>
+          <div class="see-all">See all</div>
+        </div>
+
+        <div class="services-grid">
+          <div class="service-tile" onclick="showScreen('studio')">
+            <i class="ti ti-3d-cube-sphere service-icon" aria-hidden="true"></i>
+            <div class="service-name">3D Studio</div>
+          </div>
+          <div class="service-tile" onclick="showScreen('booking')">
+            <i class="ti ti-car service-icon" aria-hidden="true"></i>
+            <div class="service-name">Car Wash</div>
+          </div>
+          <div class="service-tile" onclick="showScreen('booking')">
+            <i class="ti ti-shield-check service-icon" aria-hidden="true"></i>
+            <div class="service-name">PPF</div>
+          </div>
+          <div class="service-tile" onclick="showScreen('booking')">
+            <i class="ti ti-paint service-icon" aria-hidden="true"></i>
+            <div class="service-name">Detailing</div>
+          </div>
+          <div class="service-tile" onclick="showScreen('booking')">
+            <i class="ti ti-tool service-icon" aria-hidden="true"></i>
+            <div class="service-name">Accessories</div>
+          </div>
+          <div class="service-tile" onclick="showScreen('loyalty')">
+            <i class="ti ti-crown service-icon" aria-hidden="true"></i>
+            <div class="service-name">Loyalty</div>
+          </div>
+        </div>
+
+        <div class="section-header">
+          <div class="section-title">Active Job</div>
+          <div class="see-all">Details</div>
+        </div>
+
+        <div class="upcoming-card" onclick="showScreen('booking')">
+          <div class="upcoming-icon">
+            <i class="ti ti-car" aria-hidden="true"></i>
+          </div>
+          <div class="upcoming-info">
+            <div class="upcoming-title">Ceramic Coating</div>
+            <div class="upcoming-sub">BMW 3 Series · KA01AB1234</div>
+            <div style="margin-top:8px;">
+              <div class="progress-bar" style="background:rgba(255,255,255,0.06);"><div class="progress-fill"></div></div>
+              <div style="font-size:10px;color:var(--h1-muted);margin-top:4px;">73% complete · ETA: 2hrs</div>
+            </div>
+          </div>
+          <div class="status-badge">Live</div>
+        </div>
+
+        <div style="height:20px;"></div>
+      </div>
+
+      <div class="tab-bar">
+        <div class="tab-item" onclick="showScreen('home')">
+          <i class="ti ti-home-2 tab-icon active" aria-hidden="true"></i>
+          <span class="tab-label active">Home</span>
+        </div>
+        <div class="tab-item" onclick="showScreen('studio')">
+          <i class="ti ti-3d-cube-sphere tab-icon" aria-hidden="true"></i>
+          <span class="tab-label">Studio</span>
+        </div>
+        <div class="tab-item" onclick="showScreen('booking')">
+          <i class="ti ti-calendar tab-icon" aria-hidden="true"></i>
+          <span class="tab-label">Book</span>
+        </div>
+        <div class="tab-item" onclick="showScreen('loyalty')">
+          <i class="ti ti-crown tab-icon" aria-hidden="true"></i>
+          <span class="tab-label">Loyalty</span>
+        </div>
+        <div class="tab-item" onclick="showScreen('owner')">
+          <i class="ti ti-chart-bar tab-icon" aria-hidden="true"></i>
+          <span class="tab-label">Dashboard</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3D STUDIO SCREEN -->
+    <div class="screen" id="studio">
+      <div class="status-bar">
+        <span>9:41</span>
+        <div class="status-right">
+          <i class="ti ti-wifi" style="font-size:14px;"></i>
+          <i class="ti ti-battery-2" style="font-size:14px;"></i>
+        </div>
+      </div>
+      <div class="scroll-content">
+        <div class="studio-header">
+          <div class="back-btn" onclick="showScreen('home')"><i class="ti ti-chevron-left"></i></div>
+          <div>
+            <div class="studio-title">3D Vision Studio</div>
+            <div class="studio-sub">AI-powered · First in India</div>
+          </div>
+        </div>
+
+        <div class="car-stage" id="carStage" onclick="rotateCar()">
+          <div class="car-glow"></div>
+          <svg width="280" height="130" viewBox="0 0 280 130" class="car-svg-wrap" id="carSvg">
+            <g id="carBody">
+              <!-- Body -->
+              <ellipse cx="140" cy="105" rx="118" ry="12" fill="rgba(0,0,0,0.3)"/>
+              <path d="M30 80 L50 50 L90 32 L190 32 L230 50 L250 80 L250 95 L30 95 Z" fill="#1a1a1a" id="carBaseBody"/>
+              <!-- Roof -->
+              <path d="M80 50 L100 28 L180 28 L200 50 Z" fill="#111" id="carRoof"/>
+              <!-- Windows -->
+              <path d="M83 49 L100 31 L130 31 L125 49 Z" fill="rgba(100,200,255,0.2)" stroke="rgba(100,200,255,0.3)" stroke-width="0.5"/>
+              <path d="M127 49 L132 31 L170 31 L175 49 Z" fill="rgba(100,200,255,0.2)" stroke="rgba(100,200,255,0.3)" stroke-width="0.5"/>
+              <path d="M177 49 L177 31 L192 42 L196 49 Z" fill="rgba(100,200,255,0.2)" stroke="rgba(100,200,255,0.3)" stroke-width="0.5"/>
+              <!-- Wheels -->
+              <circle cx="75" cy="93" r="22" fill="#0a0a0a" stroke="#333" stroke-width="2"/>
+              <circle cx="75" cy="93" r="14" fill="#111" stroke="#444" stroke-width="1.5"/>
+              <circle cx="75" cy="93" r="5" fill="#555"/>
+              <circle cx="205" cy="93" r="22" fill="#0a0a0a" stroke="#333" stroke-width="2"/>
+              <circle cx="205" cy="93" r="14" fill="#111" stroke="#444" stroke-width="1.5"/>
+              <circle cx="205" cy="93" r="5" fill="#555"/>
+              <!-- Headlights -->
+              <path d="M240 62 L252 65 L252 72 L240 72 Z" fill="#FF5500" opacity="0.7"/>
+              <path d="M28 65 L40 62 L40 72 L28 72 Z" fill="#fff" opacity="0.5"/>
+              <!-- H1 detail -->
+              <text x="140" y="72" text-anchor="middle" fill="rgba(255,85,0,0.4)" font-size="11" font-weight="900">H1</text>
+            </g>
+          </svg>
+          <div class="car-color-label" id="carColorLabel">Midnight Black</div>
+          <div style="position:absolute;top:12px;left:12px;font-size:10px;color:rgba(255,85,0,0.7);font-weight:600;">TAP TO ROTATE 360°</div>
+        </div>
+
+        <div class="color-picker-row">
+          <div class="color-label-sm">Paint</div>
+          <div class="color-swatch selected" style="background:#1a1a1a;border-color:#fff;" onclick="changeColor('#1a1a1a','Midnight Black',this)"></div>
+          <div class="color-swatch" style="background:#c0392b;" onclick="changeColor('#c0392b','Crimson Red',this)"></div>
+          <div class="color-swatch" style="background:#1a5276;" onclick="changeColor('#1a5276','Ocean Blue',this)"></div>
+          <div class="color-swatch" style="background:#1e8449;" onclick="changeColor('#1e8449','British Green',this)"></div>
+          <div class="color-swatch" style="background:#784212;" onclick="changeColor('#784212','Burnt Orange',this)"></div>
+          <div class="color-swatch" style="background:#f0f0f0;" onclick="changeColor('#e0e0e0','Pearl White',this)"></div>
+        </div>
+
+        <div class="options-row" style="margin-bottom:10px;">
+          <div class="opt-chip active" id="chip-ppf" onclick="selectChip(this)">PPF Film</div>
+          <div class="opt-chip" id="chip-ceramic" onclick="selectChip(this)">Ceramic Coat</div>
+          <div class="opt-chip" id="chip-rims" onclick="selectChip(this)">Custom Rims</div>
+          <div class="opt-chip" id="chip-kit" onclick="selectChip(this)">Body Kit</div>
+          <div class="opt-chip" id="chip-tint" onclick="selectChip(this)">Window Tint</div>
+        </div>
+
+        <div style="padding: 0 20px; margin-bottom:10px;">
+          <div style="background:var(--h1-card);border:0.5px solid var(--h1-border);border-radius:14px;padding:14px 16px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div>
+                <div style="font-size:13px;font-weight:600;color:#fff;">Full PPF Protection</div>
+                <div style="font-size:12px;color:var(--h1-muted);margin-top:2px;">3M Scotchgard Pro Series · Self-healing</div>
+              </div>
+              <div style="text-align:right;">
+                <div style="font-size:16px;font-weight:800;color:var(--h1-orange);">₹45,000</div>
+                <div style="font-size:10px;color:var(--h1-muted);">est. price</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="book-strip" onclick="showScreen('booking')">
+          <div>
+            <div class="book-txt">Book This Look</div>
+            <div class="book-sub">Confirm & schedule your slot</div>
+          </div>
+          <i class="ti ti-arrow-right book-arr" aria-hidden="true"></i>
+        </div>
+
+        <div style="height:20px;"></div>
+      </div>
+
+      <div class="tab-bar">
+        <div class="tab-item" onclick="showScreen('home')">
+          <i class="ti ti-home-2 tab-icon" aria-hidden="true"></i>
+          <span class="tab-label">Home</span>
+        </div>
+        <div class="tab-item" onclick="showScreen('studio')">
+          <i class="ti ti-3d-cube-sphere tab-icon active" aria-hidden="true"></i>
+          <span class="tab-label active">Studio</span>
+        </div>
+        <div class="tab-item" onclick="showScreen('booking')">
+          <i class="ti ti-calendar tab-icon" aria-hidden="true"></i>
+          <span class="tab-label">Book</span>
+        </div>
+        <div class="tab-item" onclick="showScreen('loyalty')">
+          <i class="ti ti-crown tab-icon" aria-hidden="true"></i>
+          <span class="tab-label">Loyalty</span>
+        </div>
+        <div class="tab-item" onclick="showScreen('owner')">
+          <i class="ti ti-chart-bar tab-icon" aria-hidden="true"></i>
+          <span class="tab-label">Dashboard</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOOKING SCREEN -->
+    <div class="screen" id="booking">
+      <div class="status-bar">
+        <span>9:41</span>
+        <div class="status-right">
+          <i class="ti ti-wifi" style="font-size:14px;"></i>
+          <i class="ti ti-battery-2" style="font-size:14px;"></i>
+        </div>
+      </div>
+      <div class="scroll-content">
+        <div class="booking-header">
+          <div class="back-btn" onclick="showScreen('home')"><i class="ti ti-chevron-left"></i></div>
+          <div class="booking-title">Book a Slot</div>
+        </div>
+
+        <div style="padding: 0 20px 12px;">
+          <div style="font-size:13px;color:var(--h1-muted);font-weight:500;margin-bottom:10px;">Pick a date</div>
+          <div class="slot-grid">
+            <div class="slot-item" onclick="selectDay(this)">
+              <div class="slot-day">Mon</div>
+              <div class="slot-date">12</div>
+              <div class="slot-avail">3 slots</div>
+            </div>
+            <div class="slot-item selected" onclick="selectDay(this)">
+              <div class="slot-day">Tue</div>
+              <div class="slot-date">13</div>
+              <div class="slot-avail">5 slots</div>
+            </div>
+            <div class="slot-item" onclick="selectDay(this)">
+              <div class="slot-day">Wed</div>
+              <div class="slot-date">14</div>
+              <div class="slot-avail">2 slots</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="padding:0 20px 8px;font-size:13px;color:var(--h1-muted);font-weight:500;">Pick a time</div>
+        <div class="time-slot-row">
+          <div class="time-chip" onclick="selectTime(this)">9:00 AM</div>
+          <div class="time-chip selected" onclick="selectTime(this)">10:30 AM</div>
+          <div class="time-chip" onclick="selectTime(this)">12:00 PM</div>
+          <div class="time-chip" onclick="selectTime(this)">2:00 PM</div>
+          <div class="time-chip" onclick="selectTime(this)">4:30 PM</div>
+        </div>
+
+        <div class="section-header">
+          <div class="section-title">Booking Summary</div>
+        </div>
+
+        <div class="summary-card">
+          <div class="summary-row">
+            <span class="summary-key">Service</span>
+            <span class="summary-val">PPF Protection</span>
+          </div>
+          <div class="summary-row">
+            <span class="summary-key">Vehicle</span>
+            <span class="summary-val">BMW 3 Series</span>
+          </div>
+          <div class="summary-row">
+            <span class="summary-key">Date & Time</span>
+            <span class="summary-val">Tue May 13 · 10:30 AM</span>
+          </div>
+          <div class="summary-row">
+            <span class="summary-key">Estimated Cost</span>
+            <span class="summary-val" style="color:var(--h1-orange);">₹45,000</span>
+          </div>
+          <div class="summary-row" style="border-bottom:none;">
+            <span class="summary-key">H1 Points Earned</span>
+            <span class="summary-val" style="color:#DAA520;">+450 pts</span>
+          </div>
+        </div>
+
+        <div style="padding:16px 20px;">
+          <button class="btn-primary" style="width:100%;" onclick="confirmBooking()">Confirm Booking</button>
+        </div>
+      </div>
+
+      <div class="tab-bar">
+        <div class="tab-item" onclick="showScreen('home')">
+          <i class="ti ti-home-2 tab-icon" aria-hidden="true"></i>
+          <span class="tab-label">Home</span>
+        </div>
+        <div class="tab-item" onclick="showScreen('studio')">
+          <i class="ti ti-3d-cube-sphere tab-icon" aria-hidden="true"></i>
+          <span class="tab-label">Studio</span>
+        </div>
+        <div class="tab-item" onclick="showScreen('booking')">
+          <i class="ti ti-calendar tab-icon active" aria-hidden="true"></i>
+          <span class="tab-label active">Book</span>
+        </div>
+        <div class="tab-item" onclick="showScreen('loyalty')">
+          <i class="ti ti-crown tab-icon" aria-hidden="true"></i>
+          <span class="tab-label">Loyalty</span>
+        </div>
+        <div class="tab-item" onclick="showScreen('owner')">
+          <i class="ti ti-chart-bar tab-icon" aria-hidden="true"></i>
+          <span class="tab-label">Dashboard</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOYALTY SCREEN -->
+    <div class="screen" id="loyalty">
+      <div class="status-bar">
+        <span>9:41</span>
+        <div class="status-right">
+          <i class="ti ti-wifi" style="font-size:14px;"></i>
+          <i class="ti ti-battery-2" style="font-size:14px;"></i>
+        </div>
+      </div>
+      <div class="scroll-content">
+        <div style="padding:16px 20px 12px;display:flex;align-items:center;gap:12px;">
+          <div class="back-btn" onclick="showScreen('home')"><i class="ti ti-chevron-left"></i></div>
+          <div style="font-size:18px;font-weight:700;color:#fff;">H1 Loyalty</div>
+        </div>
+
+        <div class="loyalty-hero">
+          <div class="tier-badge">⭐ GOLD MEMBER</div>
+          <div class="points-big">1,240</div>
+          <div class="points-lbl">H1 Points Available</div>
+          <div class="progress-to-plat">
+            <div class="prog-label-row">
+              <span>3,760 pts to Platinum</span>
+              <span>5,000</span>
+            </div>
+            <div class="prog-bar"><div class="prog-fill" style="width:25%;"></div></div>
+          </div>
+        </div>
+
+        <div style="padding:14px 20px 10px;font-size:13px;color:var(--h1-muted);font-weight:500;">Your Tier</div>
+        <div class="tier-row">
+          <div class="tier-card">
+            <div class="tier-name">SILVER</div>
+            <div class="tier-pts">0–999 pts</div>
+          </div>
+          <div class="tier-card active">
+            <div class="tier-name gold">GOLD ✓</div>
+            <div class="tier-pts" style="color:#DAA520;">1K–4.9K pts</div>
+          </div>
+          <div class="tier-card">
+            <div class="tier-name">PLATINUM</div>
+            <div class="tier-pts">5K+ pts</div>
+          </div>
+        </div>
+
+        <div class="section-header">
+          <div class="section-title">Your Perks</div>
+        </div>
+
+        <div class="perk-list">
+          <div class="perk-item">
+            <div class="perk-icon"><i class="ti ti-droplet" aria-hidden="true"></i></div>
+            <div>
+              <div class="perk-title">Free Express Wash</div>
+              <div class="perk-desc">Redeem for any express wash</div>
+            </div>
+            <div class="perk-pts">200 pts</div>
+          </div>
+          <div class="perk-item">
+            <div class="perk-icon"><i class="ti ti-star" aria-hidden="true"></i></div>
+            <div>
+              <div class="perk-title">Polish Upgrade</div>
+              <div class="perk-desc">Machine polish on any panel</div>
+            </div>
+            <div class="perk-pts">500 pts</div>
+          </div>
+          <div class="perk-item">
+            <div class="perk-icon"><i class="ti ti-calendar-event" aria-hidden="true"></i></div>
+            <div>
+              <div class="perk-title">H1 Car Meet Invite</div>
+              <div class="perk-desc">Exclusive factory event access</div>
+            </div>
+            <div class="perk-pts">800 pts</div>
+          </div>
+          <div class="perk-item">
+            <div class="perk-icon"><i class="ti ti-user-check" aria-hidden="true"></i></div>
+            <div>
+              <div class="perk-title">CEO Meet — Mr. Akhil</div>
+              <div class="perk-desc">Personal consultation session</div>
+            </div>
+            <div class="perk-pts">1,200 pts</div>
+          </div>
+        </div>
+
+        <div style="height:20px;"></div>
+      </div>
+
+      <div class="tab-bar">
+        <div class="tab-item" onclick="showScreen('home')">
+          <i class="ti ti-home-2 tab-icon" aria-hidden="true"></i>
+          <span class="tab-label">Home</span>
+        </div>
+        <div class="tab-item" onclick="showScreen('studio')">
+          <i class="ti ti-3d-cube-sphere tab-icon" aria-hidden="true"></i>
+          <span class="tab-label">Studio</span>
+        </div>
+        <div class="tab-item" onclick="showScreen('booking')">
+          <i class="ti ti-calendar tab-icon" aria-hidden="true"></i>
+          <span class="tab-label">Book</span>
+        </div>
+        <div class="tab-item" onclick="showScreen('loyalty')">
+          <i class="ti ti-crown tab-icon active" aria-hidden="true"></i>
+          <span class="tab-label active">Loyalty</span>
+        </div>
+        <div class="tab-item" onclick="showScreen('owner')">
+          <i class="ti ti-chart-bar tab-icon" aria-hidden="true"></i>
+          <span class="tab-label">Dashboard</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- OWNER DASHBOARD SCREEN -->
+    <div class="screen" id="owner">
+      <div class="status-bar">
+        <span>9:41</span>
+        <div class="status-right">
+          <i class="ti ti-wifi" style="font-size:14px;"></i>
+          <i class="ti ti-battery-2" style="font-size:14px;"></i>
+        </div>
+      </div>
+      <div class="scroll-content">
+        <div class="owner-header">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div>
+              <div class="owner-title">Owner View</div>
+              <div class="owner-sub">Mr. Akhil · Live Dashboard</div>
+            </div>
+            <div class="back-btn" onclick="showScreen('home')" style="margin-top:0;"><i class="ti ti-chevron-left"></i></div>
+          </div>
+        </div>
+
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <i class="ti ti-car kpi-icon" aria-hidden="true"></i>
+            <div class="kpi-val">47</div>
+            <div class="kpi-lbl">Cars This Month</div>
+            <div class="kpi-trend">↑ 24% vs last</div>
+          </div>
+          <div class="kpi-card">
+            <i class="ti ti-currency-rupee kpi-icon" aria-hidden="true"></i>
+            <div class="kpi-val">₹8.4L</div>
+            <div class="kpi-lbl">Revenue MTD</div>
+            <div class="kpi-trend">↑ 18% vs last</div>
+          </div>
+          <div class="kpi-card">
+            <i class="ti ti-star kpi-icon" aria-hidden="true"></i>
+            <div class="kpi-val">4.8 ★</div>
+            <div class="kpi-lbl">Avg Rating</div>
+            <div class="kpi-trend" style="color:#DAA520;">Top 1%</div>
+          </div>
+          <div class="kpi-card">
+            <i class="ti ti-receipt kpi-icon" aria-hidden="true"></i>
+            <div class="kpi-val">68%</div>
+            <div class="kpi-lbl">Cash vs GST</div>
+            <div class="kpi-trend" style="color:#888;">Split tracked</div>
+          </div>
+        </div>
+
+        <div style="padding:14px 20px 10px;font-size:15px;font-weight:700;color:#fff;">Monthly Cars Serviced</div>
+        <div class="chart-card">
+          <div class="bar-chart">
+            <div class="bar-wrap">
+              <div class="bar" style="height:40%;"></div>
+              <div class="bar-lbl">Nov</div>
+            </div>
+            <div class="bar-wrap">
+              <div class="bar" style="height:58%;"></div>
+              <div class="bar-lbl">Dec</div>
+            </div>
+            <div class="bar-wrap">
+              <div class="bar" style="height:49%;"></div>
+              <div class="bar-lbl">Jan</div>
+            </div>
+            <div class="bar-wrap">
+              <div class="bar" style="height:68%;"></div>
+              <div class="bar-lbl">Feb</div>
+            </div>
+            <div class="bar-wrap">
+              <div class="bar" style="height:61%;"></div>
+              <div class="bar-lbl">Mar</div>
+            </div>
+            <div class="bar-wrap">
+              <div class="bar highlight" style="height:79%;"></div>
+              <div class="bar-lbl" style="color:var(--h1-orange);">Apr</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-header">
+          <div class="section-title">Today's Jobs</div>
+          <div class="see-all">All jobs</div>
+        </div>
+
+        <div class="job-list">
+          <div class="job-item">
+            <div class="job-dot active"></div>
+            <div class="job-info">
+              <div class="job-name">Priya Sharma</div>
+              <div class="job-car">BMW 3 Series · Ceramic Coat</div>
+            </div>
+            <div class="job-pct">73%</div>
+          </div>
+          <div class="job-item">
+            <div class="job-dot active"></div>
+            <div class="job-info">
+              <div class="job-name">Rahul Mehta</div>
+              <div class="job-car">Audi A4 · Full PPF</div>
+            </div>
+            <div class="job-pct">45%</div>
+          </div>
+          <div class="job-item">
+            <div class="job-dot done"></div>
+            <div class="job-info">
+              <div class="job-name">Deepa Nair</div>
+              <div class="job-car">Mercedes C-Class · Detailing</div>
+            </div>
+            <div style="font-size:13px;font-weight:700;color:#22c55e;">Done</div>
+          </div>
+          <div class="job-item">
+            <div class="job-dot pending"></div>
+            <div class="job-info">
+              <div class="job-name">Arjun Reddy</div>
+              <div class="job-car">Hyundai Creta · Express Wash</div>
+            </div>
+            <div style="font-size:12px;color:#888;">2:00 PM</div>
+          </div>
+        </div>
+
+        <div style="height:20px;"></div>
+      </div>
+
+      <div class="tab-bar">
+        <div class="tab-item" onclick="showScreen('home')">
+          <i class="ti ti-home-2 tab-icon" aria-hidden="true"></i>
+          <span class="tab-label">Home</span>
+        </div>
+        <div class="tab-item" onclick="showScreen('studio')">
+          <i class="ti ti-3d-cube-sphere tab-icon" aria-hidden="true"></i>
+          <span class="tab-label">Studio</span>
+        </div>
+        <div class="tab-item" onclick="showScreen('booking')">
+          <i class="ti ti-calendar tab-icon" aria-hidden="true"></i>
+          <span class="tab-label">Book</span>
+        </div>
+        <div class="tab-item" onclick="showScreen('loyalty')">
+          <i class="ti ti-crown tab-icon" aria-hidden="true"></i>
+          <span class="tab-label">Loyalty</span>
+        </div>
+        <div class="tab-item" onclick="showScreen('owner')">
+          <i class="ti ti-chart-bar tab-icon active" aria-hidden="true"></i>
+          <span class="tab-label active">Dashboard</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Screen guide -->
+  <div style="margin-left:32px;display:flex;flex-direction:column;gap:10px;max-width:180px;">
+    <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.8);margin-bottom:4px;letter-spacing:0.5px;text-transform:uppercase;">App Flow</div>
+    <div class="guide-btn" onclick="showScreen('splash')" style="background:rgba(255,85,0,0.12);border:0.5px solid rgba(255,85,0,0.3);border-radius:12px;padding:10px 14px;cursor:pointer;transition:all 0.2s;">
+      <div style="font-size:12px;font-weight:700;color:var(--h1-orange);">① Splash</div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:2px;">Onboarding</div>
+    </div>
+    <div class="guide-btn" onclick="showScreen('home')" style="background:rgba(255,85,0,0.08);border:0.5px solid rgba(255,85,0,0.2);border-radius:12px;padding:10px 14px;cursor:pointer;">
+      <div style="font-size:12px;font-weight:700;color:var(--h1-orange);">② Home</div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:2px;">Dashboard + Card</div>
+    </div>
+    <div class="guide-btn" onclick="showScreen('studio')" style="background:rgba(255,85,0,0.08);border:0.5px solid rgba(255,85,0,0.2);border-radius:12px;padding:10px 14px;cursor:pointer;">
+      <div style="font-size:12px;font-weight:700;color:var(--h1-orange);">③ 3D Studio</div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:2px;">AI Visualiser</div>
+    </div>
+    <div class="guide-btn" onclick="showScreen('booking')" style="background:rgba(255,85,0,0.08);border:0.5px solid rgba(255,85,0,0.2);border-radius:12px;padding:10px 14px;cursor:pointer;">
+      <div style="font-size:12px;font-weight:700;color:var(--h1-orange);">④ Booking</div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:2px;">Slots + Summary</div>
+    </div>
+    <div class="guide-btn" onclick="showScreen('loyalty')" style="background:rgba(255,85,0,0.08);border:0.5px solid rgba(255,85,0,0.2);border-radius:12px;padding:10px 14px;cursor:pointer;">
+      <div style="font-size:12px;font-weight:700;color:var(--h1-orange);">⑤ Loyalty</div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:2px;">Points + Tiers</div>
+    </div>
+    <div class="guide-btn" onclick="showScreen('owner')" style="background:rgba(255,85,0,0.08);border:0.5px solid rgba(255,85,0,0.2);border-radius:12px;padding:10px 14px;cursor:pointer;">
+      <div style="font-size:12px;font-weight:700;color:var(--h1-orange);">⑥ Owner View</div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:2px;">Mr. Akhil's KPIs</div>
+    </div>
+  </div>
+</div>
+
+<script>
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  var el = document.getElementById(id);
+  if (el) el.classList.add('active');
+}
+
+var carAngle = 0;
+var carColors = ['#1a1a1a','#c0392b','#1a5276','#1e8449','#784212','#e0e0e0'];
+var currentColor = '#1a1a1a';
+
+function rotateCar() {
+  carAngle += 15;
+  var stage = document.getElementById('carStage');
+  if (stage) {
+    stage.style.transition = 'transform 0.1s';
+  }
+  var body = document.getElementById('carBaseBody');
+  var roof = document.getElementById('carRoof');
+  if (body && roof) {
+    var scale = 0.95 + 0.05 * Math.cos(carAngle * Math.PI / 180);
+    body.style.transform = 'scaleX(' + scale + ')';
+    roof.style.transform = 'scaleX(' + scale + ')';
+  }
+}
+
+function changeColor(color, name, el) {
+  currentColor = color;
+  document.getElementById('carColorLabel').textContent = name;
+  var body = document.getElementById('carBaseBody');
+  var roof = document.getElementById('carRoof');
+  if (body) body.setAttribute('fill', color);
+  if (roof) roof.setAttribute('fill', shadeColor(color, -20));
+  document.querySelectorAll('.color-swatch').forEach(function(s) {
+    s.classList.remove('selected');
+    s.style.borderColor = 'transparent';
+  });
+  el.classList.add('selected');
+  el.style.borderColor = '#fff';
+}
+
+function shadeColor(color, percent) {
+  try {
+    var num = parseInt(color.replace('#',''), 16);
+    var r = Math.min(255, Math.max(0, (num >> 16) + percent));
+    var g = Math.min(255, Math.max(0, ((num >> 8) & 0xff) + percent));
+    var b = Math.min(255, Math.max(0, (num & 0xff) + percent));
+    return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+  } catch(e) { return color; }
+}
+
+function selectChip(el) {
+  document.querySelectorAll('.opt-chip').forEach(function(c) { c.classList.remove('active'); });
+  el.classList.add('active');
+}
+
+function selectDay(el) {
+  document.querySelectorAll('.slot-item').forEach(function(s) { s.classList.remove('selected'); });
+  el.classList.add('selected');
+}
+
+function selectTime(el) {
+  document.querySelectorAll('.time-chip').forEach(function(t) { t.classList.remove('selected'); });
+  el.classList.add('selected');
+}
+
+function confirmBooking() {
+  var btn = event.target;
+  btn.textContent = '✓ Booking Confirmed!';
+  btn.style.background = '#22c55e';
+  setTimeout(function() {
+    showScreen('home');
+    btn.textContent = 'Confirm Booking';
+    btn.style.background = '';
+  }, 1800);
+}
+</script>
